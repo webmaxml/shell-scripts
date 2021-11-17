@@ -1,0 +1,1 @@
+sudo xboxdrv --silent --dpad-as-button --detach-kernel-driver --daemon
