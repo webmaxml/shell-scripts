@@ -1,53 +1,29 @@
 path='/home/webmaxml/static/cheatsheets/cheatsheets'
-folder_name=$1
-file_name=$2
 
-folder_provided () { return $(! [ -z "$folder_name" ]); }
-file_provided () { return $(! [ -z "$file_name" ]); }
-folder_exists () { return $([ -d "${path}/${folder_name}" ]); }
-file_exists () { return $([ -f "${path}/${folder_name}/${file_name}.txt" ]); }
+is_empty () { return $([ -z "$1" ]); }
 
-show_folders () { ls -1 "${path}"; }
+show_folders () { ls -1 "${1}"; }
+
+show_content () { less -c "$1"; }
 
 show_files () {
-  dir="${path}/${folder_name}"
-  files=$(ls -1 "$dir")
+  files=$(ls -1 "$1")
 
   for file in $files; do
-    first_line=$(head -n 1 "${dir}/${file}")
+    first_line=$(head -n 1 "${1}/${file}")
     echo $file | sed "s/\.txt$/ - ${first_line}/"
   done
 }
 
-show_folder_not_exist_message () {
-  echo "No such directory - '${folder_name}', existing directories are:"
-  show_folders
-}
+name=$1
+is_empty $name && show_folders $path && exit
 
-show_file_not_exist_message () {
-  echo "No such file - '${file_name}', existing files are:"
-  show_files
-}
+file=$( find "$path" -type f -name "${name}.*" )
+! is_empty $file && show_content $file && exit
 
-show_content () {
-  file="${path}/${folder_name}/${file_name}.txt"
-  cat $file
-}
+dir=$( find "$path" -type d -name "$name" )
+! is_empty $dir && show_files $dir && exit
 
-if folder_provided && file_provided; then
-  if ! folder_exists; then show_folder_not_exist_message; exit 0; fi
-  if ! file_exists; then show_file_not_exist_message; exit 0; fi
-
-  show_content
-  exit 0  
-fi
-
-if folder_provided; then
-  if ! folder_exists; then show_folder_not_exist_message; exit 0; fi
-
-  show_files
-  exit 0
-fi
-
-show_folders
+echo "No such file - '${name}', existing directories are:"
+show_folders $path
 
