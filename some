@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
+source ${SCRIPTS_PATH}/functions/files
 
+#print_folder_content "${CHEATS_PATH}/utilities/shell"
 
+echo "test" || \
+echo "some"

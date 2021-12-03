@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# if param is empty
+is_empty () { return $([[ -z "$1" ]]); }
+
+# if param is a file
+is_file () { return $([[ -f "$1" ]]); }
+
+# if param is a directory
+is_folder () { return $([[ -d "$1" ]]); }
+
+# print file name - description (first file line)
+print_file_excerpt () {
+  file=$1
+  is_empty $file && echo "Error: print_file_excerpt() expects file param" && exit 1
+  ! is_file $file && echo "Error: no such file - '${file}'" && exit 1
+
+  desc=$(head -n 1 "$file")
+  is_empty $desc && echo "Error: you must provide description on the first line in $file"
+  
+  name="${file##*/}"
+  name_no_ext="${name%%.*}"
+
+  echo "${name_no_ext} - ${desc}"
+}
+
+# show folders and files with their descriptions
+print_folder_content () {
+  folder=$1
+  is_empty $folder && echo "Error: print_folder_content() expects folder param" && exit 1
+  ! is_folder $folder && echo "Error: no such folder - '${folder}'" && exit 1
+  
+  files=($(ls "$folder"))
+
+  for file in "${files[@]}"; do
+    full_path="${folder}/${file}"
+    is_file $full_path && print_file_excerpt $full_path || echo "$file\\"
+  done
+}
+
+# print file content
+print_file_content() {
+  file=$1
+  is_empty $file && echo "Error: print_file_content() expects file param" && exit 1
+  ! is_file $file && echo "Error: no such file - '${file}'" && exit 1
+
+  lines=$(cat "$file" | wc -l)
+  [[ $lines -le 20 ]] && cat "$file" || less -c "$file"
+}

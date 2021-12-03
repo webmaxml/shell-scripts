@@ -1,29 +1,27 @@
-path='/home/webmaxml/static/cheatsheets/cheatsheets'
+#!/usr/bin/env bash
 
-is_empty () { return $([ -z "$1" ]); }
+[[ -z "$SCRIPTS_PATH" ]] && echo "Error: SCRIPTS_PATH is not defined" && exit 1
+[[ -z "$CHEATS_PATH" ]] && echo "Error: CHEATS_PATH is not defined" && exit 1
 
-show_folders () { ls -1 "${1}"; }
+[[ -f "${SCRIPTS_PATH}/functions/files" ]] && source "${SCRIPTS_PATH}/functions/files"
 
-show_content () { less -c "$1"; }
+root="$1"
+name="$2"
 
-show_files () {
-  files=$(ls -1 "$1")
+path="${CHEATS_PATH}/${root}"
 
-  for file in $files; do
-    first_line=$(head -n 1 "${1}/${file}")
-    echo $file | sed "s/\.txt$/ - ${first_line}/"
-  done
-}
+if ! is_folder $path; then
+  echo -e "Error: '${root}' is not a root folder, root folders are:\n"
+  print_folder_content $CHEATS_PATH
+  exit 1
+fi
 
-name=$1
-is_empty $name && show_folders $path && exit
+is_empty $name && print_folder_content $path && exit
 
-file=$( find "$path" -type f -name "${name}.*" )
-! is_empty $file && show_content $file && exit
+file=$( find "$path" -type f \( -name "${name}.*" -o -name "${name}" \) )
+! is_empty $file && print_file_content $file && exit
 
-dir=$( find "$path" -type d -name "$name" )
-! is_empty $dir && show_files $dir && exit
+dir=$( find "$path" -type d -name "${name}" )
+! is_empty $dir && print_folder_content $dir && exit
 
-echo "No such file - '${name}', existing directories are:"
-show_folders $path
-
+echo -e "No such file in ${root} - '${name}', the content is:\n" && print_folder_content $path
